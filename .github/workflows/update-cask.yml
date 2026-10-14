@@ -1,0 +1,39 @@
+name: Update NotchRobot cask
+
+on:
+  schedule:
+    - cron: "23 */12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check latest NotchRobot release
+        id: rel
+        run: |
+          TAG=$(curl -s https://api.github.com/repos/abdomo77/NotchRobot/releases/latest | jq -r .tag_name)
+          LATEST=${TAG#v}
+          CURRENT=$(grep -oP 'version "\K[^"]+' Casks/notchrobot.rb)
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "Latest release: $LATEST, cask at: $CURRENT"
+
+      - name: Update cask and commit
+        if: steps.rel.outputs.latest != steps.rel.outputs.current
+        run: |
+          VER="${{ steps.rel.outputs.latest }}"
+          URL="https://github.com/abdomo77/NotchRobot/releases/download/v${VER}/NotchRobot.zip"
+          curl -sL "$URL" -o /tmp/notchrobot.zip
+          SHA=$(sha256sum /tmp/notchrobot.zip | cut -d' ' -f1)
+          sed -i "s/version \".*\"/version \"${VER}\"/; s/sha256 \".*\"/sha256 \"${SHA}\"/" Casks/notchrobot.rb
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/notchrobot.rb
+          git commit -m "notchrobot ${VER}"
+          git push
