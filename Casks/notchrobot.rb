@@ -1,6 +1,6 @@
 cask "notchrobot" do
-  version "2.5"
-  sha256 "4f5ed59cc2f4df3fbb9511901ed901e09d659cdf16e7a813387f83a338a442bd"
+  version "null"
+  sha256 "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"
 
   url "https://github.com/abdomo77/NotchRobot/releases/download/v#{version}/NotchRobot.zip"
   name "NotchRobot"
